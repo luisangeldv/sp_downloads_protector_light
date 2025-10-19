@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Downloads Protector (Cloud) · Opciones</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial;
+           margin: 0; padding: 16px; }
+    header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    header img { height:28px; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:16px; margin: 12px 0; }
+    label { display:block; margin:8px 0 4px; font-weight:600; }
+    input[type="text"], input[type="url"] { width:100%; padding:8px; border:1px solid #ccc; border-radius:8px; }
+    .row { display:flex; gap:12px; }
+    .row > div { flex:1; }
+    button { padding:10px 14px; border-radius:10px; border:1px solid #222; background:#222; color:#fff; cursor:pointer; }
+    button.secondary { background:#fff; color:#222; }
+    iframe { width:100%; height:520px; border:none; border-radius:12px; }
+    .hint { color:#555; font-size:12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="SealPath">
+    <h1>Downloads Protector (Cloud)</h1>
+  </header>
+
+  <div class="card">
+    <p><strong>Panel remoto</strong> (Render): inicia sesión con EntraID y configura proveedores, patrones y políticas.</p>
+    <label>URL del servicio</label>
+    <input id="serviceBaseUrl" type="url" placeholder="https://YOUR-RENDER-SERVICE.onrender.com" />
+    <div class="row">
+      <button id="openDashboard">Abrir Panel (EntraID)</button>
+      <button id="save">Guardar</button>
+    </div>
+    <p class="hint">El panel te permitirá generar un <em>API key</em> personal y vincular esta extensión automáticamente.</p>
+  </div>
+
+  <div class="card">
+    <h3>Vinculación extensión ⇄ servicio</h3>
+    <p>Si el panel no logró vincular automáticamente, pega aquí tu <em>API key</em> personal:</p>
+    <label>API key</label>
+    <input id="apiKey" type="text" placeholder="sp_dp_...">
+    <div class="row">
+      <button id="test">Probar conexión</button>
+    </div>
+    <p id="status" class="hint"></p>
+  </div>
+
+  <script type="module">
+    const $ = (sel) => document.querySelector(sel);
+
+    async function load() {
+      const { cloudSettings } = await chrome.storage.local.get({ cloudSettings: {} });
+      $("#serviceBaseUrl").value = cloudSettings.serviceBaseUrl || "";
+      $("#apiKey").value = cloudSettings.apiKey || "";
+    }
+
+    async function save() {
+      const newSettings = {
+        serviceBaseUrl: $("#serviceBaseUrl").value.trim(),
+        apiKey: $("#apiKey").value.trim()
+      };
+      await chrome.storage.local.set({ cloudSettings: newSettings });
+      $("#status").textContent = "Guardado ✓";
+      setTimeout(()=> $("#status").textContent = "", 2000);
+    }
+
+    function openDashboard() {
+      const base = $("#serviceBaseUrl").value.trim();
+      if (!base) { alert("Indica la URL del servicio"); return; }
+      chrome.tabs.create({ url: `${base}/dashboard` });
+    }
+
+    async function test() {
+      const { cloudSettings } = await chrome.storage.local.get({ cloudSettings: {} });
+      if (!cloudSettings.serviceBaseUrl) {
+        $("#status").textContent = "Configura la URL del servicio primero.";
+        return;
+      }
+      try {
+        const r = await fetch(`${cloudSettings.serviceBaseUrl}/api/ping`, {
+          headers: {
+            ...(cloudSettings.apiKey ? { "x-api-key": cloudSettings.apiKey } : {})
+          }
+        });
+        $("#status").textContent = r.ok ? "Conexión OK ✓" : "Fallo de conexión";
+      } catch {
+        $("#status").textContent = "Fallo de conexión";
+      }
+    }
+
+    $("#save").addEventListener("click", save);
+    $("#openDashboard").addEventListener("click", openDashboard);
+    $("#test").addEventListener("click", test);
+
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Downloads Protector (Cloud)",
+  "version": "0.1.0",
+  "description": "Ligera: delega protección/renombrado al servicio cloud (Render).",
+  "action": {
+    "default_title": "Downloads Protector (Cloud)"
+  },
+  "permissions": [
+    "downloads",
+    "downloads.shelf",
+    "storage",
+    "notifications",
+    "alarms",
+    "cookies"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
