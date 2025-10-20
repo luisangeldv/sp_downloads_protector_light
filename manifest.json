@@ -6,6 +6,12 @@
   "action": {
     "default_title": "Downloads Protector (Cloud)"
   },
+  "host_permissions": [
+    "https://*.box.com/*",
+    "https://*.sharepoint.com/*",
+    "https://*.onmicrosoft.com/*",
+    "https://outlook.office.com/*"
+  ],
   "permissions": [
     "downloads",
     "downloads.shelf",
@@ -13,9 +19,6 @@
     "notifications",
     "alarms",
     "cookies"
-  ],
-  "host_permissions": [
-    "*://*/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
